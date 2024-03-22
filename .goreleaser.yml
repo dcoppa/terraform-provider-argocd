@@ -38,7 +38,7 @@ release:
   draft: true
   disable: false
   github:
-    owner: oboukili
+    owner: dcoppa
     name: terraform-provider-argocd
 changelog:
   skip: false
