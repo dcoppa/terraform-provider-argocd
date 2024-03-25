@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/argoproj/argo-cd/v2/server/rbacpolicy"
+	"github.com/dcoppa/argo-cd/v2/server/rbacpolicy"
 	fwdiag "github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"

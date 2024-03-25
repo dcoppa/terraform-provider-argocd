@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/argoproj/argo-cd/v2/pkg/apiclient/account"
-	"github.com/argoproj/argo-cd/v2/pkg/apiclient/session"
+	"github.com/dcoppa/argo-cd/v2/pkg/apiclient/account"
+	"github.com/dcoppa/argo-cd/v2/pkg/apiclient/session"
 	"github.com/cristalhq/jwt/v3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"

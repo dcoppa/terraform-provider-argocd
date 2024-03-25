@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	clusterClient "github.com/argoproj/argo-cd/v2/pkg/apiclient/cluster"
+	clusterClient "github.com/dcoppa/argo-cd/v2/pkg/apiclient/cluster"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/oboukili/terraform-provider-argocd/internal/provider"
