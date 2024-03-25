@@ -10,7 +10,7 @@ require (
 	github.com/argoproj/gitops-engine v0.7.3
 	github.com/argoproj/pkg v0.13.7-0.20230627120311-a4dd357b057e
 	github.com/cristalhq/jwt/v3 v3.1.0
-	github.com/dcoppa/argo-cd/v2 v2.0.0-20240325121748-81bc53e5d17b
+	github.com/dcoppa/argo-cd/v2 v2.0.0-20240325181659-0fd857208112
 	github.com/elliotchance/pie/v2 v2.8.0
 	github.com/golang/protobuf v1.5.3
 	github.com/hashicorp/terraform-plugin-docs v0.16.0
