@@ -156,6 +156,7 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 	d.SetId(fmt.Sprintf("%s:%s", app.Name, objectMeta.Namespace))
 
 	if wait, ok := d.GetOk("wait"); ok && wait.(bool) {
+		time.Sleep(10 * time.Second)
 		if err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
 			var list *application.ApplicationList
 			if list, err = si.ApplicationClient.List(ctx, &applicationClient.ApplicationQuery{
@@ -310,6 +311,7 @@ func resourceArgoCDApplicationUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if wait, _ok := d.GetOk("wait"); _ok && wait.(bool) {
+		time.Sleep(10 * time.Second)
 		if err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *retry.RetryError {
 			var list *application.ApplicationList
 			if list, err = si.ApplicationClient.List(ctx, appQuery); err != nil {
