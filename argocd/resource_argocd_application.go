@@ -362,6 +362,32 @@ func resourceArgoCDApplicationDelete(ctx context.Context, d *schema.ResourceData
 		return argoCDAPIError("delete", "application", appName, err)
 	}
 
+	if wait, ok := d.GetOk("wait"); ok && wait.(bool) {
+		if err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
+			apps, err := si.ApplicationClient.List(ctx, &applicationClient.ApplicationQuery{
+				Name:         &appName,
+				AppNamespace: &namespace,
+			})
+
+			switch err {
+			case nil:
+				if apps != nil && len(apps.Items) > 0 {
+					return retry.RetryableError(fmt.Errorf("application %s is still present", appName))
+				}
+			default:
+				if !strings.Contains(err.Error(), "NotFound") {
+					return retry.NonRetryableError(err)
+				}
+			}
+
+			d.SetId("")
+
+			return nil
+		}); err != nil {
+			return errorToDiagnostics(fmt.Sprintf("error while waiting for application %s to be deleted", appName), err)
+		}
+	}
+
 	d.SetId("")
 
 	return nil
