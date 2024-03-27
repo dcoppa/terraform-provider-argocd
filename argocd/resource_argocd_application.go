@@ -142,6 +142,7 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 			},
 		},
 	})
+	time.Sleep(30 * time.Second)
 	if err != nil {
 		return argoCDAPIError("create", "application", objectMeta.Name, err)
 	} else if app == nil {
@@ -299,7 +300,9 @@ func resourceArgoCDApplicationUpdate(ctx context.Context, d *schema.ResourceData
 				APIVersion: "argoproj.io/v1alpha1",
 			},
 		},
-	}); err != nil {
+	})
+	time.Sleep(30 * time.Second)
+	if err != nil {
 		return argoCDAPIError("update", "application", objectMeta.Name, err)
 	}
 
