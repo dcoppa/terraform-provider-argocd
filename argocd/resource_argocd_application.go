@@ -10,9 +10,7 @@ import (
 
 	applicationClient "github.com/dcoppa/argo-cd/v2/pkg/apiclient/application"
 	application "github.com/dcoppa/argo-cd/v2/pkg/apis/application/v1alpha1"
-	"github.com/argoproj/gitops-engine/pkg/health"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/oboukili/terraform-provider-argocd/internal/features"
 	"github.com/oboukili/terraform-provider-argocd/internal/provider"
@@ -31,12 +29,6 @@ func resourceArgoCDApplication() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"metadata": metadataSchema("applications.argoproj.io"),
 			"spec":     applicationSpecSchemaV4(false),
-			"wait": {
-				Type:        schema.TypeBool,
-				Description: "Upon application creation or update, wait for application health/sync status to be healthy/Synced, upon application deletion, wait for application to be removed, when set to true. Wait timeouts are controlled by Terraform Create, Update and Delete resource timeouts (all default to 5 minutes). **Note**: if ArgoCD decides not to sync an application (e.g. because the project to which the application belongs has a `sync_window` applied) then you will experience an expected timeout event if `wait = true`.",
-				Optional:    true,
-				Default:     false,
-			},
 			"cascade": {
 				Type:        schema.TypeBool,
 				Description: "Whether to applying cascading deletion when application is removed.",
@@ -142,7 +134,6 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 			},
 		},
 	})
-	time.Sleep(30 * time.Second)
 	if err != nil {
 		return argoCDAPIError("create", "application", objectMeta.Name, err)
 	} else if app == nil {
@@ -154,35 +145,7 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	d.SetId(fmt.Sprintf("%s:%s", objectMeta.Name, objectMeta.Namespace))
-
-	if wait, ok := d.GetOk("wait"); ok && wait.(bool) {
-		if err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
-			var list *application.ApplicationList
-			if list, err = si.ApplicationClient.List(ctx, &applicationClient.ApplicationQuery{
-				Name:         &objectMeta.Name,
-				AppNamespace: &objectMeta.Namespace,
-			}); err != nil {
-				return retry.NonRetryableError(fmt.Errorf("error while waiting for application %s to be synced and healthy: %s", objectMeta.Name, err))
-			}
-
-			if len(list.Items) != 1 {
-				return retry.NonRetryableError(fmt.Errorf("found unexpected number of applications matching name '%s' and namespace '%s'. Items: %d", objectMeta.Name, objectMeta.Namespace, len(list.Items)))
-			}
-
-			if list.Items[0].Status.Health.Status != health.HealthStatusHealthy && list.Items[0].Status.Health.Status != health.HealthStatusProgressing {
-				return retry.RetryableError(fmt.Errorf("expected application health status to be healthy but was %s", list.Items[0].Status.Health.Status))
-			}
-
-			if list.Items[0].Status.Sync.Status != application.SyncStatusCodeSynced {
-				return retry.RetryableError(fmt.Errorf("expected application sync status to be synced but was %s", list.Items[0].Status.Sync.Status))
-			}
-
-			return nil
-		}); err != nil {
-			return errorToDiagnostics(fmt.Sprintf("error while waiting for application %s to be created", objectMeta.Name), err)
-		}
-	}
+	d.SetId(fmt.Sprintf("%s:%s", app.Name, objectMeta.Namespace))
 
 	return resourceArgoCDApplicationRead(ctx, d, meta)
 }
@@ -281,6 +244,12 @@ func resourceArgoCDApplicationUpdate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
+	// Kubernetes API requires providing the up-to-date correct ResourceVersion for updates
+	// FIXME ResourceVersion not available anymore
+	// if app != nil {
+	// 	 appRequest.ResourceVersion = app.ResourceVersion
+	// }
+
 	if len(apps.Items) > 1 {
 		return []diag.Diagnostic{
 			{
@@ -291,7 +260,7 @@ func resourceArgoCDApplicationUpdate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	_, err = si.ApplicationClient.Update(ctx, &applicationClient.ApplicationUpdateRequest{
+	if _, err = si.ApplicationClient.Update(ctx, &applicationClient.ApplicationUpdateRequest{
 		Application: &application.Application{
 			ObjectMeta: objectMeta,
 			Spec:       spec,
@@ -300,39 +269,8 @@ func resourceArgoCDApplicationUpdate(ctx context.Context, d *schema.ResourceData
 				APIVersion: "argoproj.io/v1alpha1",
 			},
 		},
-	})
-	time.Sleep(30 * time.Second)
-	if err != nil {
+	}); err != nil {
 		return argoCDAPIError("update", "application", objectMeta.Name, err)
-	}
-
-	if wait, _ok := d.GetOk("wait"); _ok && wait.(bool) {
-		if err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *retry.RetryError {
-			var list *application.ApplicationList
-			if list, err = si.ApplicationClient.List(ctx, appQuery); err != nil {
-				return retry.NonRetryableError(fmt.Errorf("error while waiting for application %s to be synced and healthy: %s", list.Items[0].Name, err))
-			}
-
-			if len(list.Items) != 1 {
-				return retry.NonRetryableError(fmt.Errorf("found unexpected number of applications matching name '%s' and namespace '%s'. Items: %d", *appQuery.Name, *appQuery.AppNamespace, len(list.Items)))
-			}
-
-			if list.Items[0].Status.ReconciledAt.Equal(apps.Items[0].Status.ReconciledAt) {
-				return retry.RetryableError(fmt.Errorf("reconciliation has not begun"))
-			}
-
-			if list.Items[0].Status.Health.Status != health.HealthStatusHealthy && list.Items[0].Status.Health.Status != health.HealthStatusProgressing {
-				return retry.RetryableError(fmt.Errorf("expected application health status to be healthy but was %s", list.Items[0].Status.Health.Status))
-			}
-
-			if list.Items[0].Status.Sync.Status != application.SyncStatusCodeSynced {
-				return retry.RetryableError(fmt.Errorf("expected application sync status to be synced but was %s", list.Items[0].Status.Sync.Status))
-			}
-
-			return nil
-		}); err != nil {
-			return errorToDiagnostics(fmt.Sprintf("error while waiting for application %s to be updated", *appQuery.Name), err)
-		}
 	}
 
 	return resourceArgoCDApplicationRead(ctx, d, meta)
