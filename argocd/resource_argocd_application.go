@@ -291,7 +291,7 @@ func resourceArgoCDApplicationUpdate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	if _, err = si.ApplicationClient.Update(ctx, &applicationClient.ApplicationUpdateRequest{
+	_, err = si.ApplicationClient.Update(ctx, &applicationClient.ApplicationUpdateRequest{
 		Application: &application.Application{
 			ObjectMeta: objectMeta,
 			Spec:       spec,
