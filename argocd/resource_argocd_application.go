@@ -156,7 +156,7 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 	d.SetId(fmt.Sprintf("%s:%s", app.Name, objectMeta.Namespace))
 
 	if wait, ok := d.GetOk("wait"); ok && wait.(bool) {
-		time.Sleep(60 * time.Second)
+		time.Sleep(30 * time.Second)
 		if err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
 			var list *application.ApplicationList
 			if list, err = si.ApplicationClient.List(ctx, &applicationClient.ApplicationQuery{
@@ -164,10 +164,6 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 				AppNamespace: &app.Namespace,
 			}); err != nil {
 				return retry.NonRetryableError(fmt.Errorf("error while waiting for application %s to be synced and healthy: %s", app.Name, err))
-			}
-
-			if len(list.Items) != 1 {
-				return retry.NonRetryableError(fmt.Errorf("found unexpected number of applications matching name '%s' and namespace '%s'. Items: %d", app.Name, app.Namespace, len(list.Items)))
 			}
 
 			if list.Items[0].Status.Health.Status != health.HealthStatusHealthy {
@@ -311,15 +307,11 @@ func resourceArgoCDApplicationUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if wait, _ok := d.GetOk("wait"); _ok && wait.(bool) {
-		time.Sleep(60 * time.Second)
+		time.Sleep(30 * time.Second)
 		if err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *retry.RetryError {
 			var list *application.ApplicationList
 			if list, err = si.ApplicationClient.List(ctx, appQuery); err != nil {
 				return retry.NonRetryableError(fmt.Errorf("error while waiting for application %s to be synced and healthy: %s", list.Items[0].Name, err))
-			}
-
-			if len(list.Items) != 1 {
-				return retry.NonRetryableError(fmt.Errorf("found unexpected number of applications matching name '%s' and namespace '%s'. Items: %d", *appQuery.Name, *appQuery.AppNamespace, len(list.Items)))
 			}
 
 			if list.Items[0].Status.ReconciledAt.Equal(apps.Items[0].Status.ReconciledAt) {
