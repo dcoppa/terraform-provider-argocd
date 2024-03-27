@@ -169,7 +169,7 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 				return retry.NonRetryableError(fmt.Errorf("found unexpected number of applications matching name '%s' and namespace '%s'. Items: %d", objectMeta.Name, objectMeta.Namespace, len(list.Items)))
 			}
 
-			if list.Items[0].Status.Health.Status != health.HealthStatusHealthy {
+			if list.Items[0].Status.Health.Status != health.HealthStatusHealthy && list.Items[0].Status.Health.Status != health.HealthStatusProgressing {
 				return retry.RetryableError(fmt.Errorf("expected application health status to be healthy but was %s", list.Items[0].Status.Health.Status))
 			}
 
@@ -318,7 +318,7 @@ func resourceArgoCDApplicationUpdate(ctx context.Context, d *schema.ResourceData
 				return retry.RetryableError(fmt.Errorf("reconciliation has not begun"))
 			}
 
-			if list.Items[0].Status.Health.Status != health.HealthStatusHealthy {
+			if list.Items[0].Status.Health.Status != health.HealthStatusHealthy && list.Items[0].Status.Health.Status != health.HealthStatusProgressing {
 				return retry.RetryableError(fmt.Errorf("expected application health status to be healthy but was %s", list.Items[0].Status.Health.Status))
 			}
 
