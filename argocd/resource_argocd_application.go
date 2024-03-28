@@ -134,6 +134,9 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 			},
 		},
 	})
+
+	time.Sleep(30 * time.Second)
+
 	if err != nil {
 		return argoCDAPIError("create", "application", objectMeta.Name, err)
 	} else if app == nil {
@@ -244,12 +247,6 @@ func resourceArgoCDApplicationUpdate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	// Kubernetes API requires providing the up-to-date correct ResourceVersion for updates
-	// FIXME ResourceVersion not available anymore
-	// if app != nil {
-	// 	 appRequest.ResourceVersion = app.ResourceVersion
-	// }
-
 	if len(apps.Items) > 1 {
 		return []diag.Diagnostic{
 			{
@@ -260,7 +257,7 @@ func resourceArgoCDApplicationUpdate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	if _, err = si.ApplicationClient.Update(ctx, &applicationClient.ApplicationUpdateRequest{
+	_, err = si.ApplicationClient.Update(ctx, &applicationClient.ApplicationUpdateRequest{
 		Application: &application.Application{
 			ObjectMeta: objectMeta,
 			Spec:       spec,
@@ -269,7 +266,11 @@ func resourceArgoCDApplicationUpdate(ctx context.Context, d *schema.ResourceData
 				APIVersion: "argoproj.io/v1alpha1",
 			},
 		},
-	}); err != nil {
+	})
+
+	time.Sleep(30 * time.Second)
+
+	if err != nil {
 		return argoCDAPIError("update", "application", objectMeta.Name, err)
 	}
 
@@ -287,11 +288,15 @@ func resourceArgoCDApplicationDelete(ctx context.Context, d *schema.ResourceData
 	namespace := ids[1]
 	cascade := d.Get("cascade").(bool)
 
-	if _, err := si.ApplicationClient.Delete(ctx, &applicationClient.ApplicationDeleteRequest{
+	_, err := si.ApplicationClient.Delete(ctx, &applicationClient.ApplicationDeleteRequest{
 		Name:         &appName,
 		Cascade:      &cascade,
 		AppNamespace: &namespace,
-	}); err != nil && !strings.Contains(err.Error(), "NotFound") {
+	})
+
+	time.Sleep(30 * time.Second)
+
+	if err != nil && !strings.Contains(err.Error(), "NotFound") {
 		return argoCDAPIError("delete", "application", appName, err)
 	}
 
