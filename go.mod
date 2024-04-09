@@ -7,10 +7,9 @@ toolchain go1.22.1
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/ProtonMail/gopenpgp/v2 v2.7.4
-	github.com/argoproj/gitops-engine v0.7.3
 	github.com/argoproj/pkg v0.13.7-0.20230627120311-a4dd357b057e
 	github.com/cristalhq/jwt/v3 v3.1.0
-	github.com/dcoppa/argo-cd/v2 v2.0.0-20240325181659-0fd857208112
+	github.com/dcoppa/argo-cd/v2 v2.0.0-20240409080148-248cfacb2bc5
 	github.com/elliotchance/pie/v2 v2.8.0
 	github.com/golang/protobuf v1.5.3
 	github.com/hashicorp/terraform-plugin-docs v0.16.0
@@ -48,6 +47,7 @@ require (
 	github.com/alicebob/miniredis/v2 v2.30.4 // indirect
 	github.com/antonmedv/expr v1.15.2 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
+	github.com/argoproj/gitops-engine v0.7.3 // indirect
 	github.com/argoproj/notifications-engine v0.4.1-0.20240126143042-84b9f7913604 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
