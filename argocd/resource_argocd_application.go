@@ -150,12 +150,11 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 
 	d.SetId(fmt.Sprintf("%s:%s", app.Name, objectMeta.Namespace))
 
-	time.Sleep(15 * time.Second)
-
 	return resourceArgoCDApplicationRead(ctx, d, meta)
 }
 
 func resourceArgoCDApplicationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	time.Sleep(15 * time.Second)
 	si := meta.(*provider.ServerInterface)
 	if diags := si.InitClients(ctx); diags != nil {
 		return pluginSDKDiags(diags)
@@ -270,7 +269,7 @@ func resourceArgoCDApplicationUpdate(ctx context.Context, d *schema.ResourceData
 		},
 	})
 
-	time.Sleep(30 * time.Second)
+	time.Sleep(15 * time.Second)
 
 	if err != nil {
 		return argoCDAPIError("update", "application", objectMeta.Name, err)
