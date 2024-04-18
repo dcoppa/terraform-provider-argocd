@@ -180,7 +180,19 @@ func resourceArgoCDApplicationRead(ctx context.Context, d *schema.ResourceData, 
 	l := len(apps.Items)
 
 	if l == 0 {
-		l = 1
+		var err2 error
+		apps, err2 = si.ApplicationClient.List(ctx, &applicationClient.ApplicationQuery{
+			Name:         &appName,
+			AppNamespace: &namespace,
+		})
+		if err2 != nil {
+			if strings.Contains(err2.Error(), "NotFound") {
+				d.SetId("")
+				return diag.Diagnostics{}
+			}
+			return argoCDAPIError("read", "application", appName, err2)
+		}
+		l = len(apps.Items)
 	}
 
 	switch {
