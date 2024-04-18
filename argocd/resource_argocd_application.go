@@ -186,7 +186,7 @@ func resourceArgoCDApplicationRead(ctx context.Context, d *schema.ResourceData, 
 	case l < 1:
 		// d.SetId("")
 		// return diag.Diagnostics{}
-		fmt.Println("MADONNA PUTTANA")
+		fmt.Println("MADONNA PUTTANA! len(apps.Items) == ", l)
 		log.Fatal("MADONNA PUTTANA")
 	case l == 1:
 		break
