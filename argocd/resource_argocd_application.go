@@ -173,6 +173,7 @@ func resourceArgoCDApplicationRead(ctx context.Context, d *schema.ResourceData, 
 		if strings.Contains(err.Error(), "NotFound") {
 			// d.SetId("")
 			// return diag.Diagnostics{}
+			fmt.Println("PORCO DIO")
 			log.Fatal("PORCO DIO")
 		}
 
@@ -185,6 +186,7 @@ func resourceArgoCDApplicationRead(ctx context.Context, d *schema.ResourceData, 
 	case l < 1:
 		// d.SetId("")
 		// return diag.Diagnostics{}
+		fmt.Println("MADONNA PUTTANA")
 		log.Fatal("MADONNA PUTTANA")
 	case l == 1:
 		break
