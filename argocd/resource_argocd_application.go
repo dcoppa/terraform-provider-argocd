@@ -135,7 +135,7 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 		},
 	})
 
-	time.Sleep(45 * time.Second)
+	time.Sleep(15 * time.Second)
 
 	if err != nil {
 		return argoCDAPIError("create", "application", objectMeta.Name, err)
@@ -149,6 +149,8 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	d.SetId(fmt.Sprintf("%s:%s", app.Name, objectMeta.Namespace))
+
+	time.Sleep(15 * time.Second)
 
 	return resourceArgoCDApplicationRead(ctx, d, meta)
 }
@@ -268,7 +270,7 @@ func resourceArgoCDApplicationUpdate(ctx context.Context, d *schema.ResourceData
 		},
 	})
 
-	time.Sleep(45 * time.Second)
+	time.Sleep(30 * time.Second)
 
 	if err != nil {
 		return argoCDAPIError("update", "application", objectMeta.Name, err)
@@ -294,7 +296,7 @@ func resourceArgoCDApplicationDelete(ctx context.Context, d *schema.ResourceData
 		AppNamespace: &namespace,
 	})
 
-	time.Sleep(45 * time.Second)
+	time.Sleep(30 * time.Second)
 
 	if err != nil && !strings.Contains(err.Error(), "NotFound") {
 		return argoCDAPIError("delete", "application", appName, err)
