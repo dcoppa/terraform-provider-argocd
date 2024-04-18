@@ -3,7 +3,6 @@ package argocd
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -171,9 +170,8 @@ func resourceArgoCDApplicationRead(ctx context.Context, d *schema.ResourceData, 
 	})
 	if err != nil {
 		if strings.Contains(err.Error(), "NotFound") {
-			// d.SetId("")
-			// return diag.Diagnostics{}
-			log.Fatal("PORCO DIO")
+			d.SetId("")
+			return diag.Diagnostics{}
 		}
 
 		return argoCDAPIError("read", "application", appName, err)
@@ -181,11 +179,14 @@ func resourceArgoCDApplicationRead(ctx context.Context, d *schema.ResourceData, 
 
 	l := len(apps.Items)
 
+	if l == 0 {
+		l = 1
+	}
+
 	switch {
 	case l < 1:
-		// d.SetId("")
-		// return diag.Diagnostics{}
-		log.Fatal("MADONNA PUTTANA! len(apps.Items) == ", l)
+		d.SetId("")
+		return diag.Diagnostics{}
 	case l == 1:
 		break
 	case l > 1:
