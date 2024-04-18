@@ -170,8 +170,9 @@ func resourceArgoCDApplicationRead(ctx context.Context, d *schema.ResourceData, 
 	})
 	if err != nil {
 		if strings.Contains(err.Error(), "NotFound") {
-			d.SetId("")
-			return diag.Diagnostics{}
+			// d.SetId("")
+			// return diag.Diagnostics{}
+			log.Fatal("PORCO DIO")
 		}
 
 		return argoCDAPIError("read", "application", appName, err)
@@ -181,8 +182,9 @@ func resourceArgoCDApplicationRead(ctx context.Context, d *schema.ResourceData, 
 
 	switch {
 	case l < 1:
-		d.SetId("")
-		return diag.Diagnostics{}
+		// d.SetId("")
+		// return diag.Diagnostics{}
+		log.Fatal("MADONNA PUTTANA")
 	case l == 1:
 		break
 	case l > 1:
