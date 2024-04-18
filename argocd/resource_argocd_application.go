@@ -135,8 +135,6 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 		},
 	})
 
-	time.Sleep(15 * time.Second)
-
 	if err != nil {
 		return argoCDAPIError("create", "application", objectMeta.Name, err)
 	} else if app == nil {
@@ -154,67 +152,6 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceArgoCDApplicationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	time.Sleep(15 * time.Second)
-	si := meta.(*provider.ServerInterface)
-	if diags := si.InitClients(ctx); diags != nil {
-		return pluginSDKDiags(diags)
-	}
-
-	ids := strings.Split(d.Id(), ":")
-	appName := ids[0]
-	namespace := ids[1]
-
-	apps, err := si.ApplicationClient.List(ctx, &applicationClient.ApplicationQuery{
-		Name:         &appName,
-		AppNamespace: &namespace,
-	})
-	if err != nil {
-		if strings.Contains(err.Error(), "NotFound") {
-			d.SetId("")
-			return diag.Diagnostics{}
-		}
-
-		return argoCDAPIError("read", "application", appName, err)
-	}
-
-	l := len(apps.Items)
-
-	if l == 0 {
-		var err2 error
-		apps, err2 = si.ApplicationClient.List(ctx, &applicationClient.ApplicationQuery{
-			Name:         &appName,
-			AppNamespace: &namespace,
-		})
-		if err2 != nil {
-			if strings.Contains(err2.Error(), "NotFound") {
-				d.SetId("")
-				return diag.Diagnostics{}
-			}
-			return argoCDAPIError("read", "application", appName, err2)
-		}
-		l = len(apps.Items)
-	}
-
-	switch {
-	case l < 1:
-		d.SetId("")
-		return diag.Diagnostics{}
-	case l == 1:
-		break
-	case l > 1:
-		return []diag.Diagnostic{
-			{
-				Severity: diag.Error,
-				Summary:  fmt.Sprintf("found multiple applications matching name '%s' and namespace '%s'", appName, namespace),
-			},
-		}
-	}
-
-	err = flattenApplication(&apps.Items[0], d)
-	if err != nil {
-		return errorToDiagnostics(fmt.Sprintf("failed to flatten application %s", appName), err)
-	}
-
 	return nil
 }
 
@@ -285,8 +222,6 @@ func resourceArgoCDApplicationUpdate(ctx context.Context, d *schema.ResourceData
 		},
 	})
 
-	time.Sleep(15 * time.Second)
-
 	if err != nil {
 		return argoCDAPIError("update", "application", objectMeta.Name, err)
 	}
@@ -310,8 +245,6 @@ func resourceArgoCDApplicationDelete(ctx context.Context, d *schema.ResourceData
 		Cascade:      &cascade,
 		AppNamespace: &namespace,
 	})
-
-	time.Sleep(30 * time.Second)
 
 	if err != nil && !strings.Contains(err.Error(), "NotFound") {
 		return argoCDAPIError("delete", "application", appName, err)
