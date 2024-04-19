@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/oboukili/terraform-provider-argocd/internal/features"
 	"github.com/oboukili/terraform-provider-argocd/internal/provider"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 func resourceArgoCDApplication() *schema.Resource {
@@ -151,6 +152,59 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceArgoCDApplicationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	si := meta.(*provider.ServerInterface)
+	if diags := si.InitClients(ctx); diags != nil {
+		return pluginSDKDiags(diags)
+	}
+
+	ids := strings.Split(d.Id(), ":")
+
+	tflog.Warn(ctx, fmt.Sprintf("DEBUG-1 Id == %s", d.Id()))
+
+	appName := ids[0]
+	namespace := ids[1]
+
+	tflog.Warn(ctx, fmt.Sprintf("DEBUG-2 appName == %s - namespace == %s", appName, namespace))
+
+	apps, err := si.ApplicationClient.List(ctx, &applicationClient.ApplicationQuery{
+		Name:         &appName,
+		AppNamespace: &namespace,
+	})
+	if err != nil {
+		if strings.Contains(err.Error(), "NotFound") {
+			d.SetId("")
+			return diag.Diagnostics{}
+		}
+
+		return argoCDAPIError("read", "application", appName, err)
+	}
+
+	l := len(apps.Items)
+
+	tflog.Warn(ctx, fmt.Sprintf("DEBUG-3 length of apps.Items == %d", l))
+
+	switch {
+	case l < 1:
+		d.SetId("")
+		return diag.Diagnostics{}
+	case l == 1:
+		break
+	case l > 1:
+		return []diag.Diagnostic{
+			{
+				Severity: diag.Error,
+				Summary:  fmt.Sprintf("found multiple applications matching name '%s' and namespace '%s'", appName, namespace),
+			},
+		}
+	}
+
+	tflog.Warn(ctx, fmt.Sprintf("DEBUG-4 apps Items == %s", apps.Items[0]))
+
+	err = flattenApplication(&apps.Items[0], d)
+	if err != nil {
+		return errorToDiagnostics(fmt.Sprintf("failed to flatten application %s", appName), err)
+	}
+
 	return nil
 }
 
