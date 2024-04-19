@@ -153,7 +153,6 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 
 func resourceArgoCDApplicationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	si := meta.(*provider.ServerInterface)
-	time.Sleep(15 * time.Second)
 	if diags := si.InitClients(ctx); diags != nil {
 		return pluginSDKDiags(diags)
 	}
@@ -171,16 +170,27 @@ func resourceArgoCDApplicationRead(ctx context.Context, d *schema.ResourceData, 
 		Name:         &appName,
 		AppNamespace: &namespace,
 	})
-	if err != nil {
-		if strings.Contains(err.Error(), "NotFound") {
-			d.SetId("")
-			return diag.Diagnostics{}
+
+	for {
+		apps, err = si.ApplicationClient.List(ctx, &applicationClient.ApplicationQuery{
+			Name:         &appName,
+			AppNamespace: &namespace,
+		})
+		if err != nil {
+			if strings.Contains(err.Error(), "NotFound") {
+				d.SetId("")
+				return diag.Diagnostics{}
+			}
+
+			return argoCDAPIError("read", "application", appName, err)
 		}
 
-		return argoCDAPIError("read", "application", appName, err)
-	}
+		if len(apps.Items) >= 1 {
+			break
+		}
 
-	time.Sleep(15 * time.Second)
+		time.Sleep(1 * time.Second)
+	}
 
 	l := len(apps.Items)
 
@@ -200,8 +210,6 @@ func resourceArgoCDApplicationRead(ctx context.Context, d *schema.ResourceData, 
 			},
 		}
 	}
-
-	tflog.Warn(ctx, fmt.Sprintf("DEBUG-4 apps Items == %s -", apps.Items[0]))
 
 	err = flattenApplication(&apps.Items[0], d)
 	if err != nil {
