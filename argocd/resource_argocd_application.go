@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/oboukili/terraform-provider-argocd/internal/features"
 	"github.com/oboukili/terraform-provider-argocd/internal/provider"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 func resourceArgoCDApplication() *schema.Resource {
@@ -135,6 +134,7 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 			},
 		},
 	})
+
 	if err != nil {
 		return argoCDAPIError("create", "application", objectMeta.Name, err)
 	} else if app == nil {
@@ -152,50 +152,30 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceArgoCDApplicationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	time.Sleep(60 * time.Second)
+	time.Sleep(30 * time.Second)
 	si := meta.(*provider.ServerInterface)
 	if diags := si.InitClients(ctx); diags != nil {
 		return pluginSDKDiags(diags)
 	}
 
 	ids := strings.Split(d.Id(), ":")
-
-	tflog.Warn(ctx, fmt.Sprintf("DEBUG-1 Id == %s -", d.Id()))
-
 	appName := ids[0]
 	namespace := ids[1]
-
-	tflog.Warn(ctx, fmt.Sprintf("DEBUG-2 appName == %s - namespace == %s -", appName, namespace))
 
 	apps, err := si.ApplicationClient.List(ctx, &applicationClient.ApplicationQuery{
 		Name:         &appName,
 		AppNamespace: &namespace,
 	})
-
-	for {
-		apps, err = si.ApplicationClient.List(ctx, &applicationClient.ApplicationQuery{
-			Name:         &appName,
-			AppNamespace: &namespace,
-		})
-		if err != nil {
-			if strings.Contains(err.Error(), "NotFound") {
-				d.SetId("")
-				return diag.Diagnostics{}
-			}
-
-			return argoCDAPIError("read", "application", appName, err)
+	if err != nil {
+		if strings.Contains(err.Error(), "NotFound") {
+			d.SetId("")
+			return diag.Diagnostics{}
 		}
 
-		if len(apps.Items) >= 1 {
-			break
-		}
-
-		time.Sleep(1 * time.Second)
+		return argoCDAPIError("read", "application", appName, err)
 	}
 
 	l := len(apps.Items)
-
-	tflog.Warn(ctx, fmt.Sprintf("DEBUG-3 length of apps.Items == %d -", l))
 
 	switch {
 	case l < 1:
