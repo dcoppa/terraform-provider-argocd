@@ -134,7 +134,6 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 			},
 		},
 	})
-
 	if err != nil {
 		return argoCDAPIError("create", "application", objectMeta.Name, err)
 	} else if app == nil {
