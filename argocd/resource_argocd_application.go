@@ -153,18 +153,19 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 
 func resourceArgoCDApplicationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	si := meta.(*provider.ServerInterface)
+	time.Sleep(15 * time.Second)
 	if diags := si.InitClients(ctx); diags != nil {
 		return pluginSDKDiags(diags)
 	}
 
 	ids := strings.Split(d.Id(), ":")
 
-	tflog.Warn(ctx, fmt.Sprintf("DEBUG-1 Id == %s", d.Id()))
+	tflog.Warn(ctx, fmt.Sprintf("DEBUG-1 Id == %s -", d.Id()))
 
 	appName := ids[0]
 	namespace := ids[1]
 
-	tflog.Warn(ctx, fmt.Sprintf("DEBUG-2 appName == %s - namespace == %s", appName, namespace))
+	tflog.Warn(ctx, fmt.Sprintf("DEBUG-2 appName == %s - namespace == %s -", appName, namespace))
 
 	apps, err := si.ApplicationClient.List(ctx, &applicationClient.ApplicationQuery{
 		Name:         &appName,
@@ -179,9 +180,11 @@ func resourceArgoCDApplicationRead(ctx context.Context, d *schema.ResourceData, 
 		return argoCDAPIError("read", "application", appName, err)
 	}
 
+	time.Sleep(15 * time.Second)
+
 	l := len(apps.Items)
 
-	tflog.Warn(ctx, fmt.Sprintf("DEBUG-3 length of apps.Items == %d", l))
+	tflog.Warn(ctx, fmt.Sprintf("DEBUG-3 length of apps.Items == %d -", l))
 
 	switch {
 	case l < 1:
@@ -198,7 +201,7 @@ func resourceArgoCDApplicationRead(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	tflog.Warn(ctx, fmt.Sprintf("DEBUG-4 apps Items == %s", apps.Items[0]))
+	tflog.Warn(ctx, fmt.Sprintf("DEBUG-4 apps Items == %s -", apps.Items[0]))
 
 	err = flattenApplication(&apps.Items[0], d)
 	if err != nil {
