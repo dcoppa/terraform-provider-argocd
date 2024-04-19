@@ -152,6 +152,7 @@ func resourceArgoCDApplicationCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceArgoCDApplicationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	time.Sleep(60 * time.Second)
 	si := meta.(*provider.ServerInterface)
 	if diags := si.InitClients(ctx); diags != nil {
 		return pluginSDKDiags(diags)
