@@ -11,7 +11,6 @@ import (
 	applicationClient "github.com/dcoppa/argo-cd/v2/pkg/apiclient/application"
 	application "github.com/dcoppa/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/oboukili/terraform-provider-argocd/internal/features"
 	"github.com/oboukili/terraform-provider-argocd/internal/provider"
@@ -296,27 +295,7 @@ func resourceArgoCDApplicationDelete(ctx context.Context, d *schema.ResourceData
 		return argoCDAPIError("delete", "application", appName, err)
 	}
 
-	_ = retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
-		apps, err := si.ApplicationClient.List(ctx, &applicationClient.ApplicationQuery{
-			Name:         &appName,
-			AppNamespace: &namespace,
-		})
-
-		switch err {
-		case nil:
-			if apps != nil && len(apps.Items) > 0 {
-				return retry.RetryableError(fmt.Errorf("application %s is still present", appName))
-			}
-		default:
-			if !strings.Contains(err.Error(), "NotFound") {
-				return retry.NonRetryableError(err)
-			}
-		}
-
-		d.SetId("")
-
-		return nil
-	})
+	time.Sleep(30 * time.Second)
 
 	d.SetId("")
 
