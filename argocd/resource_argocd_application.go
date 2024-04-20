@@ -62,9 +62,9 @@ func resourceArgoCDApplication() *schema.Resource {
 			},
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(5 * time.Minute),
-			Update: schema.DefaultTimeout(5 * time.Minute),
-			Delete: schema.DefaultTimeout(5 * time.Minute),
+			Create: schema.DefaultTimeout(1 * time.Minute),
+			Update: schema.DefaultTimeout(1 * time.Minute),
+			Delete: schema.DefaultTimeout(1 * time.Minute),
 		},
 	}
 }
@@ -296,7 +296,7 @@ func resourceArgoCDApplicationDelete(ctx context.Context, d *schema.ResourceData
 		return argoCDAPIError("delete", "application", appName, err)
 	}
 
-	if err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
+	_ = retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 		apps, err := si.ApplicationClient.List(ctx, &applicationClient.ApplicationQuery{
 			Name:         &appName,
 			AppNamespace: &namespace,
@@ -316,9 +316,7 @@ func resourceArgoCDApplicationDelete(ctx context.Context, d *schema.ResourceData
 		d.SetId("")
 
 		return nil
-	}); err != nil {
-		return errorToDiagnostics(fmt.Sprintf("error while waiting for application %s to be deleted", appName), err)
-	}
+	})
 
 	d.SetId("")
 
