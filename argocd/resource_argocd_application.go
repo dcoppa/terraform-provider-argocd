@@ -276,30 +276,7 @@ func resourceArgoCDApplicationUpdate(ctx context.Context, d *schema.ResourceData
 		return argoCDAPIError("update", "application", objectMeta.Name, err)
 	}
 
-	_ = retry.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *retry.RetryError {
-		var list *application.ApplicationList
-		if list, err = si.ApplicationClient.List(ctx, appQuery); err != nil {
-			return retry.NonRetryableError(fmt.Errorf("error while waiting for application %s to be synced and healthy: %s", list.Items[0].Name, err))
-		}
-
-		if len(list.Items) != 1 {
-			return retry.NonRetryableError(fmt.Errorf("found unexpected number of applications matching name '%s' and namespace '%s'. Items: %d", *appQuery.Name, *appQuery.AppNamespace, len(list.Items)))
-		}
-
-		if list.Items[0].Status.ReconciledAt.Equal(apps.Items[0].Status.ReconciledAt) {
-			return retry.RetryableError(fmt.Errorf("reconciliation has not begun"))
-		}
-
-		if list.Items[0].Status.Health.Status != health.HealthStatusHealthy {
-			return retry.RetryableError(fmt.Errorf("expected application health status to be healthy but was %s", list.Items[0].Status.Health.Status))
-		}
-
-		if list.Items[0].Status.Sync.Status != application.SyncStatusCodeSynced {
-			return retry.RetryableError(fmt.Errorf("expected application sync status to be synced but was %s", list.Items[0].Status.Sync.Status))
-		}
-
-		return nil
-	})
+	time.Sleep(60 * time.Second)
 
 	return resourceArgoCDApplicationRead(ctx, d, meta)
 }
