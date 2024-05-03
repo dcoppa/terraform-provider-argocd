@@ -301,7 +301,7 @@ func resourceArgoCDApplicationDelete(ctx context.Context, d *schema.ResourceData
 		return argoCDAPIError("delete", "application", appName, err)
 	}
 
-	_ = retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
+	_ = retry.RetryContext(ctx, 1*time.Minute, func() *retry.RetryError {
 		apps, err := si.ApplicationClient.List(ctx, &applicationClient.ApplicationQuery{
 			Name:         &appName,
 			AppNamespace: &namespace,
