@@ -169,8 +169,8 @@ github.com/cyphar/filepath-securejoin v0.2.4/go.mod h1:aPGpWjXOXUn2NCNjFvBE6aRxG
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/dcoppa/argo-cd/v2 v2.0.0-20240514111231-130926dfe754 h1:uwsJW+JfWkaiFG2AeB0P0GhmI0H6NgTSuSuVPno74/c=
-github.com/dcoppa/argo-cd/v2 v2.0.0-20240514111231-130926dfe754/go.mod h1:IHCrHWkM4q89pcW3uMdEJsO2RDQOxVdE/4CvBZT09Ko=
+github.com/dcoppa/argo-cd/v2 v2.0.0-20240514113313-d096b9fba94b h1:f10A5e5ZJj6bRJSKJwYqnBSQlUQFNJ8xqt8sax81Ves=
+github.com/dcoppa/argo-cd/v2 v2.0.0-20240514113313-d096b9fba94b/go.mod h1:02E42B+YrpAwI2gjTvtfa6vYTHrJSPjMqEcLgXHTgCU=
 github.com/deckarep/golang-set v1.7.1/go.mod h1:93vsz/8Wt4joVM7c2AVqh+YRMiUSc14yDtF28KmMOgQ=
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f h1:lO4WD4F/rVNCu3HqELle0jiPLLBs70cWOduZpkS1E78=
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f/go.mod h1:cuUVRXasLTGF7a8hSLbxyZXjz+1KgoB3wDUb6vlszIc=

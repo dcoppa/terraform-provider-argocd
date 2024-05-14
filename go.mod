@@ -9,7 +9,7 @@ require (
 	github.com/ProtonMail/gopenpgp/v2 v2.7.4
 	github.com/argoproj/pkg v0.13.7-0.20230627120311-a4dd357b057e
 	github.com/cristalhq/jwt/v3 v3.1.0
-	github.com/dcoppa/argo-cd/v2 v2.0.0-20240514111231-130926dfe754
+	github.com/dcoppa/argo-cd/v2 v2.0.0-20240514113313-d096b9fba94b
 	github.com/elliotchance/pie/v2 v2.8.0
 	github.com/golang/protobuf v1.5.3
 	github.com/hashicorp/terraform-plugin-docs v0.16.0
